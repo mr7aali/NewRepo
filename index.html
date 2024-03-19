@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://webgateway.csccloud.in/assets/js/jquery-3.2.1.min.js"></script>
+    <script>
+
+var template;
+function CallFingerAPI()
+{
+  var url = "http://localhost:8080/CallMorphoAPI";
+  var xmlhttp;
+  if (window.XMLHttpRequest)
+  {// code for IE7+, Firefox, Chrome, Opera, Safari
+
+     xmlhttp=new XMLHttpRequest();
+  
+  }
+  else
+  {// code for IE6, IE5
+    xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+
+  }
+     xmlhttp.onreadystatechange=function()
+  {
+     if (xmlhttp.readyState==4 && xmlhttp.status==200)
+     {
+	   fpobject = JSON.parse(xmlhttp.responseText);
+//	   alert("Device Status: "+fpobject.ReturnCode);
+//	   alert("Base64ISOTemplate: "+fpobject.Base64ISOTemplate);
+//	   alert("Base64RAWIMage: "+fpobject.Base64RAWIMage);
+	   console.log(fpobject.Base64ISOTemplate);
+//	   alert("Base64BMPIMage: "+fpobject.Base64BMPIMage);
+       document.getElementById("img").src = "data:image/png;base64, "+fpobject.Base64BMPIMage+"";
+//	   alert("NFIQ: "+fpobject.NFIQ);
+
+       template = fpobject.Base64ISOTemplate;
+
+        result01=takeCapturecam();
+
+        servercall(fpobject.Base64BMPIMage,result01);
+     }
+
+  }
+
+    function takeCapturecam(){
+                 var canvas = $('#canvas');
+                canvas.attr('width', 300);
+                canvas.attr('height', 300);
+                canvas[0].getContext('2d').drawImage(video, 0, 0, canvas.width(), canvas.height());
+                var imagedata = canvas[0].toDataURL("image/jpeg").replace(/^data:image\/(png|jpg);base64,/, '');
+                //$('#id_baseimg').val(imagedata);
+                document.getElementById("img03").src = imagedata;
+                console.log("clicks-----------");
+               //servercall(canvas[0].toDataURL("image/jpeg").replace('data:', '').replace(/^.+,/, ''));
+        return canvas[0].toDataURL("image/jpeg").replace('data:', '').replace(/^.+,/, '')
+
+    }
+
+    function servercall(base64img,result01){
+        myKeyVals01={inputbase64:base64img,a:'a',pic:result01};
+        var jsondropdown301 =$.ajax({
+            method: 'POST',
+            url: "https://192.168.31.226:8000/Fingerapp/fingerrecord/daterange/",
+//            url: "https://192.168.31.226:8000/fingerrecord/daterange/",
+            dataType: "json",
+            contentType: "application/json",
+            data:JSON.stringify(myKeyVals01),
+            async: true
+
+            }).done(function(data, textStatus, jqXHR) {
+            console.log(data.result);
+            document.getElementById("img01").src = "data:image/png;base64, "+data.result+"";
+            document.getElementById("img02").src = "data:image/png;base64, "+data.image+"";
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+
+        }).responseText;
+
+
+    }
+  
+  var timeout = 5;
+  xmlhttp.open("POST",url+"?"+timeout,true);
+  xmlhttp.send();
+
+}
+
+
+function CompareTemplates()
+{
+  var url = "http://localhost:8080/CompareTemplates";
+  var xmlhttp;
+  if (window.XMLHttpRequest)
+  {// code for IE7+, Firefox, Chrome, Opera, Safari
+
+     xmlhttp=new XMLHttpRequest();
+  
+  }
+  else
+  {// code for IE6, IE5
+    xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+
+  }
+     xmlhttp.onreadystatechange=function()
+  {
+     if (xmlhttp.readyState==4 && xmlhttp.status==200)
+     {
+		fpobject = JSON.parse(xmlhttp.responseText);
+	    alert("CompareTemplate return code: "+fpobject.ReturnCode);
+		alert("Matching Result: "+fpobject.MatchingResult);
+     }
+  }
+  
+  var templatesArray = [1];
+  templatesArray[0] = template;  
+  alert("templatearray1: "+ templatesArray[0]);
+  var numberOfTemplates = 1;
+  xmlhttp.open("POST",url+"?"+templatesArray+"$"+template+"$"+numberOfTemplates,true);
+  xmlhttp.send();
+  
+}
+
+
+function getDeviceDetails()
+{
+  var url = "http://localhost:8080/getDeviceDetails";
+  var xmlhttp;
+  if (window.XMLHttpRequest)
+  {// code for IE7+, Firefox, Chrome, Opera, Safari
+
+     xmlhttp=new XMLHttpRequest();
+  
+  }
+  else
+  {// code for IE6, IE5
+    xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+
+  }
+     xmlhttp.onreadystatechange=function()
+  {
+     if (xmlhttp.readyState==4 && xmlhttp.status==200)
+     {
+		fpobject = JSON.parse(xmlhttp.responseText);
+	    alert("Device Make: "+fpobject.DeviceMake);
+	    alert("Device Model: "+fpobject.DeviceModel);
+	    alert("Device Serial: "+fpobject.DeviceSerial);
+     }
+  }
+  
+  xmlhttp.open("POST",url,true);
+  xmlhttp.send();
+ 
+  
+}
+
+</script>
+</head>
+<body>
+
+<h2>MLC Vote Validation Mainten Db for ML,DL,AI Model Train for Anlysis </h2>
+<button type="button" id="snap" onclick="CallFingerAPI()">CaptureFinger</button>
+<button type="button" onclick="getDeviceDetails()">getDeviceDetails</button>
+<button type="button" onclick="CompareTemplates()">CompareTemplates</button>
+<br>
+
+
+<table border="1">
+    <center><h2>Store Copy Future Compilent for Train AI Model For Duplicate Attempt</h2></center>
+    <video id="video" width="240" height="180" autoplay></video>
+    <tr>
+        <th>FingerPrint Scan Result</th>
+        <!--<th>FingerPrint Scan AI Result</th>-->
+        <th>Capture Camera Picture</th>
+        <th>Get Location</th>
+    </tr>
+    <tr>
+        <td><img id="img" src="" /></td>
+        <!--<td><img id="img01" src="" /></td>-->
+        <td><img id="img03" src="" /></td>
+        <td>Get Lat/Lag</td>
+    </tr>
+
+</table>
+<canvas hidden="hidden" id="canvas" width="640" height="480"></canvas>
+
+
+
+<table border="1">
+    <center><h2>AI Anlyisis</h2></center>
+    <!--<video id="video" width="240" height="180" autoplay></video>-->
+    <tr>
+        <!--<th>FingerPrint Scan Result</th>-->
+        <th>FingerPrint Scan AI Result</th>
+        <th>Photo Anlysis Result</th>
+    </tr>
+    <tr>
+        <!--<td><img id="img" src="" /></td>-->
+        <td><img id="img01" src="" /></td>
+        <td><img id="img02" src="" /></td>
+    </tr>
+
+</table>
+
+<!--<br>-->
+<!--<img id="img02" src="" width="150" height="200" /><br>-->
+<!--<img id="img01" src="" /><br>-->
+<!--<img id="img03" src="" /><br>-->
+
+
+    <!--<center>-->
+        <!--<table border="1">-->
+            <!--<tr>-->
+                <!--<th>Video Streming</th>-->
+            <!--</tr>-->
+
+            <!--<tr>-->
+                <!--<td>-->
+                    <!--&lt;!&ndash;<video id="video" width="640" height="480" autoplay></video>&ndash;&gt;-->
+                <!--</td>-->
+            <!--</tr>-->
+
+        <!--</table>-->
+
+        <!--<table border="1">-->
+            <!--<tr>-->
+                <!--<th>-->
+                    <!--&lt;!&ndash;<button id="snap" class="sexyButton">Snap Photo</button>&ndash;&gt;-->
+                <!--</th>-->
+            <!--</tr>-->
+            <!--<tr>-->
+                <!--<td>-->
+                    <!--&lt;!&ndash;<canvas id="canvas" width="640" height="480"></canvas>&ndash;&gt;-->
+                <!--</td>-->
+            <!--</tr>-->
+
+        <!--</table>-->
+
+    <!--</center>-->
+
+<script>
+
+        var imagedata;
+
+        // Put event listeners into place
+
+        window.addEventListener("DOMContentLoaded", function () {
+            // Grab elements, create settings, etc.
+            var canvas = document.getElementById('canvas');
+            var context = canvas.getContext('2d');
+            var video = document.getElementById('video');
+            //var mediaConfig =  { video: true };
+            var mediaConfig = {video: {facingMode: "environment"}}
+            //var mediaConfig = {video: {facingMode: {exact: "environment"}}}
+            //var mediaConfig = {video: { facingMode: "user"}}
+            //var mediaConfig =  { video: {facingMode:{exact:"enviroment"} } };
+            var errBack = function (e) {
+                console.log('An error has occurred!', e)
+            };
+
+            // Put video listeners into place
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia(mediaConfig).then(function (stream) {
+                    //video.src = window.URL.createObjectURL(stream);
+                    video.srcObject = stream;
+                    video.play();
+                });
+            }
+
+            /* Legacy code below! */
+            else if (navigator.getUserMedia) { // Standard
+                navigator.getUserMedia(mediaConfig, function (stream) {
+                    video.src = stream;
+                    video.play();
+                }, errBack);
+            } else if (navigator.webkitGetUserMedia) { // WebKit-prefixed
+                navigator.webkitGetUserMedia(mediaConfig, function (stream) {
+                    video.src = window.webkitURL.createObjectURL(stream);
+                    video.play();
+                }, errBack);
+            } else if (navigator.mozGetUserMedia) { // Mozilla-prefixed
+                navigator.mozGetUserMedia(mediaConfig, function (stream) {
+                    video.src = window.URL.createObjectURL(stream);
+                    video.play();
+                }, errBack);
+            }
+
+            // Trigger photo take
+            document.getElementById('snap').addEventListener('click', function () {
+                context.drawImage(video, 0, 0, 640, 480);
+
+
+                var canvas = $('#canvas');
+                canvas.attr('width', 300);
+                canvas.attr('height', 300);
+                canvas[0].getContext('2d').drawImage(video, 0, 0, canvas.width(), canvas.height());
+                var imagedata = canvas[0].toDataURL("image/png");
+
+                console.log(canvas);
+                console.log(imagedata);
+
+
+
+            });
+        }, false);
+
+//        $(document).ready(function () {
+//
+//
+//            $("#snap").click(function () {
+//                var canvas = $('#canvas');
+//                canvas.attr('width', 300);
+//                canvas.attr('height', 300);
+//                canvas[0].getContext('2d').drawImage(video, 0, 0, canvas.width(), canvas.height());
+//                var imagedata = canvas[0].toDataURL("image/jpeg").replace(/^data:image\/(png|jpg);base64,/, '');
+//                //$('#id_baseimg').val(imagedata);
+//                document.getElementById("img03").src = imagedata;
+//                console.log("clicks-----------");
+//            });
+//
+//        });
+
+</script>
+</body>
+</html>
